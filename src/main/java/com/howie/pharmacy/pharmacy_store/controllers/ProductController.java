@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +54,27 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
         List<ProductResponseDto> products = productService.findAll();
         return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("by-category/{categoryId}")
+    public ResponseEntity<Page<ProductResponseDto>> getProductsByCategory(@PathVariable Integer categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) List<Integer> brandIds,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "price") String sort,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        Page<ProductResponseDto> productsPage = productService.getAllProductsByCategory(
+                categoryId,
+                brandIds,
+                minPrice,
+                maxPrice,
+                sort,
+                sortDirection,
+                page,
+                size);
+        return new ResponseEntity<>(productsPage, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

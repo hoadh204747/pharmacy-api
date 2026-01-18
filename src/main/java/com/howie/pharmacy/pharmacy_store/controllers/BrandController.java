@@ -1,4 +1,5 @@
 package com.howie.pharmacy.pharmacy_store.controllers;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class BrandController {
         return updatedBrand
                 .map(brandDto -> new ResponseEntity<>(brandDto, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }   
+    }
 
     @GetMapping
     public ResponseEntity<Iterable<BrandResponseDto>> getAllBrands() {
@@ -47,13 +48,13 @@ public class BrandController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // @GetMapping("/category/{categoryId}")
-    // public ResponseEntity<Iterable<BrandDto>> getBrandsByCategory(@PathVariable Integer categoryId) {
-    //     try {
-    //         Iterable<BrandDto> brands = brandService.getBrandsByCategory(categoryId);
-    //         return new ResponseEntity<>(brands, HttpStatus.OK);
-    //     } catch (IllegalArgumentException e) {
-    //         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //     }
-    // }
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Iterable<BrandResponseDto>> getBrandsByCategory(@PathVariable Integer categoryId) {
+        try {
+            Iterable<BrandResponseDto> brands = brandService.getBrandsByCategory(categoryId);
+            return new ResponseEntity<>(brands, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }

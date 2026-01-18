@@ -12,7 +12,7 @@ import com.howie.pharmacy.pharmacy_store.dto.order.OrderDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderResponseDto;
 import com.howie.pharmacy.pharmacy_store.entity.Order;
 
-@Mapper(componentModel = "spring", uses = { ShippingAddressMapper.class })
+@Mapper(componentModel = "spring", uses = { ShippingAddressMapper.class, OrderItemMapper.class })
 public interface OrderMapper {
     OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
 
@@ -20,6 +20,7 @@ public interface OrderMapper {
     OrderDto toDto(Order order);
 
     @Mapping(target = "shippingAddress", source = "shippingAddress")
+    @Mapping(target = "orderItems", source = "orderItems")
     OrderResponseDto toResponseDto(Order order);
 
     List<OrderResponseDto> toResponseDtoList(List<Order> orders);

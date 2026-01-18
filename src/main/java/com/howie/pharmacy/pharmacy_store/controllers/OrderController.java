@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderDto;
+import com.howie.pharmacy.pharmacy_store.dto.order.OrderResponseDto;
 import com.howie.pharmacy.pharmacy_store.services.OrderService;
 
 @RestController
@@ -14,6 +15,11 @@ import com.howie.pharmacy.pharmacy_store.services.OrderService;
 public class OrderController {
     @Autowired
     private OrderService orderService;
+
+    @GetMapping
+    public ResponseEntity<OrderResponseDto> getAllOrders() {
+        return new ResponseEntity(orderService.getAllOrders(), HttpStatus.OK);
+    }
 
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(@RequestBody OrderCreateDto orderCreateDto) {

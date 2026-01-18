@@ -5,6 +5,10 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductCreateDto;
@@ -34,6 +38,22 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponseDto> findAll() {
         List<Product> products = productRepository.findAll();
         return productMapper.toResponseDtoList(products);
+    }
+
+    @Override
+    // @Cacheable(value = "productCache", key = "#id")
+    public Page<ProductResponseDto> getAllProductsByCategory(Integer categoryId, List<Integer> brandIds,
+            Double minPrice, Double maxPrice, String sortBy, String sortDirection, int pageNo,
+            int pageSize) {
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(direction, sortBy));
+
+        Page<Product> productsPage = productRepository.getAllProductsByCategory(categoryId, brandIds, minPrice,
+                maxPrice, pageable);
+
+        return productsPage.map(productMapper::toResponseDto);
     }
 
     @Override

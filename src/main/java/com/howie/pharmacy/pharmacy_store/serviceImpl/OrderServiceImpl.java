@@ -12,12 +12,16 @@ import com.howie.pharmacy.pharmacy_store.dto.order.OrderCreateDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderDto;
 import com.howie.pharmacy.pharmacy_store.dto.order.OrderResponseDto;
 import com.howie.pharmacy.pharmacy_store.entity.Order;
+import com.howie.pharmacy.pharmacy_store.entity.OrderItem;
+import com.howie.pharmacy.pharmacy_store.entity.Product;
 import com.howie.pharmacy.pharmacy_store.entity.Order.Status;
 import com.howie.pharmacy.pharmacy_store.entity.ShippingAddress;
+import com.howie.pharmacy.pharmacy_store.mapper.OrderItemMapper;
 import com.howie.pharmacy.pharmacy_store.mapper.OrderMapper;
 import com.howie.pharmacy.pharmacy_store.mapper.ShippingAddressMapper;
 import com.howie.pharmacy.pharmacy_store.rabbitmq.event.OrderCreateEvent;
 import com.howie.pharmacy.pharmacy_store.repository.OrderRepository;
+import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
 import com.howie.pharmacy.pharmacy_store.services.OrderService;
 
 import jakarta.transaction.Transactional;
@@ -29,13 +33,18 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final ShippingAddressMapper shippingAddressMapper;
     private final RabbitTemplate rabbitTemplate;
+    private final OrderItemMapper orderItemMapper;
+    private final ProductRepository productRepository;
 
     public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper,
-            ShippingAddressMapper shippingAddressMapper, RabbitTemplate rabbitTemplate) {
+            ShippingAddressMapper shippingAddressMapper, RabbitTemplate rabbitTemplate, OrderItemMapper orderItemMapper,
+            ProductRepository productRepository) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.shippingAddressMapper = shippingAddressMapper;
         this.rabbitTemplate = rabbitTemplate;
+        this.orderItemMapper = orderItemMapper;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -62,6 +71,21 @@ public class OrderServiceImpl implements OrderService {
             order.setShippingAddress(shippingAddress); // Thiết lập mối quan hệ 1-1
         } else {
             throw new IllegalArgumentException("Shipping address is required to create an order.");
+        }
+        if (orderCreateDto.getOrderItems() != null && !orderCreateDto.getOrderItems().isEmpty()) {
+            List<OrderItem> items = orderCreateDto.getOrderItems().stream()
+                    .map(itemDto -> {
+                        OrderItem item = orderItemMapper.toEntity(itemDto);
+                        Product product = productRepository.findById(itemDto.getProductId())
+                                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                        item.setProduct(product);
+                        item.setOrder(order); // Thiết lập mối quan hệ ngược lại
+                        return item;
+                    })
+                    .toList();
+            order.setOrderItems(items);
+        } else {
+            throw new IllegalArgumentException("At least one order item is required to create an order.");
         }
         if (order.getTotalPrice() == null) {
             order.setTotalPrice(BigDecimal.ZERO);

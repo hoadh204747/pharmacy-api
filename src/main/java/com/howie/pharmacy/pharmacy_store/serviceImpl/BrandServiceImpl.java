@@ -53,6 +53,7 @@ public class BrandServiceImpl implements BrandService {
 
         return Optional.of(brandMapper.toResponseDto(brandRepository.save(brand)));
     }
+
     @Override
     public Optional<BrandResponseDto> update(Integer id, BrandCreateDto brandCreateDto) {
         Brand existingBrand = brandRepository.findById(id)
@@ -87,13 +88,13 @@ public class BrandServiceImpl implements BrandService {
                 .map(brandMapper::toDto);
     }
 
-    // @Override
-    // @Transactional
-    // public List<BrandDto> getBrandsByCategory(Integer categoryId) {
-    //     Category category = categoryRepository.findById(categoryId)
-    //             .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-    //     List<Brand> brands = brandRepository.findByCategory(category);
-    //     return brandMapper.toDtoList(brands);
-    // }
+    @Override
+    @Transactional
+    public List<BrandResponseDto> getBrandsByCategory(Integer categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        List<Brand> brands = brandRepository.findByCategoryIdWithCategory(categoryId);
+        return brandMapper.toResponseDtoList(brands);
+    }
 
 }

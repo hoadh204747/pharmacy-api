@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.howie.pharmacy.pharmacy_store.dto.shippingaddress.ShippingAddressDto;
 import com.howie.pharmacy.pharmacy_store.entity.Order;
@@ -24,8 +25,10 @@ public class OrderDto {
     private String slugStatus;
     private String orderCode;
 
-    //private UserDto user; // User đầy đủ thông tin
+    // private UserDto user; // User đầy đủ thông tin
     private ShippingAddressDto shippingAddress; // ShippingAddress đầy đủ thông tin
+
+    private List<OrderItemDto> orderItems; // Danh sách OrderItem đầy đủ thông tin
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

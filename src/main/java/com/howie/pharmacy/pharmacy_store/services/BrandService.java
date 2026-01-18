@@ -12,9 +12,14 @@ import com.howie.pharmacy.pharmacy_store.dto.brand.BrandCreateDto;
 @Component
 public interface BrandService {
     List<BrandResponseDto> findAll();
+
     Optional<BrandResponseDto> create(BrandCreateDto brandCreateDto);
+
     Optional<BrandResponseDto> update(Integer id, BrandCreateDto brandCreateDto);
+
     void delete(Integer id);
+
     Optional<BrandDto> findById(Integer id);
-    //List<BrandDto> getBrandsByCategory(Integer categoryId);
+
+    List<BrandResponseDto> getBrandsByCategory(Integer categoryId);
 }
