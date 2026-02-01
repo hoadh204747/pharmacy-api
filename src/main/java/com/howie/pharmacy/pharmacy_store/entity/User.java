@@ -21,12 +21,20 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "users")
 public class User {
+
+    public enum ERole {
+        CUSTOMER, ADMIN
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
+
+    @Column(name = "phone")
+    private String phone;
 
     @Column(name = "password")
     private String password;
@@ -38,14 +46,14 @@ public class User {
     private String avatarUrl;
 
     @Column(name = "role", nullable = false)
-    private String role = "customer"; // Default role is customer
+    private ERole role = ERole.CUSTOMER; // Default role is customer
 
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @LastModifiedDate
-     @Column(nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
