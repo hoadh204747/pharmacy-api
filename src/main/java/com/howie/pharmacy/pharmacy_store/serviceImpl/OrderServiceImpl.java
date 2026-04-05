@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.howie.pharmacy.pharmacy_store.config.RabbitMQConfig;
@@ -16,12 +17,14 @@ import com.howie.pharmacy.pharmacy_store.entity.OrderItem;
 import com.howie.pharmacy.pharmacy_store.entity.Product;
 import com.howie.pharmacy.pharmacy_store.entity.Order.Status;
 import com.howie.pharmacy.pharmacy_store.entity.ShippingAddress;
+import com.howie.pharmacy.pharmacy_store.entity.User;
 import com.howie.pharmacy.pharmacy_store.mapper.OrderItemMapper;
 import com.howie.pharmacy.pharmacy_store.mapper.OrderMapper;
 import com.howie.pharmacy.pharmacy_store.mapper.ShippingAddressMapper;
 import com.howie.pharmacy.pharmacy_store.rabbitmq.event.OrderCreateEvent;
 import com.howie.pharmacy.pharmacy_store.repository.OrderRepository;
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
+import com.howie.pharmacy.pharmacy_store.repository.UserRepository;
 import com.howie.pharmacy.pharmacy_store.services.OrderService;
 
 import jakarta.transaction.Transactional;
@@ -35,16 +38,18 @@ public class OrderServiceImpl implements OrderService {
     private final RabbitTemplate rabbitTemplate;
     private final OrderItemMapper orderItemMapper;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper,
             ShippingAddressMapper shippingAddressMapper, RabbitTemplate rabbitTemplate, OrderItemMapper orderItemMapper,
-            ProductRepository productRepository) {
+            ProductRepository productRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.shippingAddressMapper = shippingAddressMapper;
         this.rabbitTemplate = rabbitTemplate;
         this.orderItemMapper = orderItemMapper;
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -63,35 +68,45 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto createOrder(OrderCreateDto orderCreateDto) {
+
+        String currentUserPhone = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByPhone(currentUserPhone).orElse(null);
+
         Order order = orderMapper.toEntity(orderCreateDto);
+
+        order.setUser(currentUser);
 
         if (orderCreateDto.getShippingAddress() != null) {
             ShippingAddress shippingAddress = shippingAddressMapper.toEntity(orderCreateDto.getShippingAddress());
-            shippingAddress.setOrder(order); // Rất quan trọng: Thiết lập mối quan hệ ngược lại
-            order.setShippingAddress(shippingAddress); // Thiết lập mối quan hệ 1-1
+            shippingAddress.setOrder(order);
+            order.setShippingAddress(shippingAddress);
         } else {
             throw new IllegalArgumentException("Shipping address is required to create an order.");
         }
+        BigDecimal calculatedTotal = BigDecimal.ZERO;
         if (orderCreateDto.getOrderItems() != null && !orderCreateDto.getOrderItems().isEmpty()) {
-            List<OrderItem> items = orderCreateDto.getOrderItems().stream()
-                    .map(itemDto -> {
-                        OrderItem item = orderItemMapper.toEntity(itemDto);
-                        Product product = productRepository.findById(itemDto.getProductId())
-                                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-                        item.setProduct(product);
-                        item.setOrder(order); // Thiết lập mối quan hệ ngược lại
-                        return item;
-                    })
-                    .toList();
-            order.setOrderItems(items);
+            for (var itemDto : orderCreateDto.getOrderItems()) {
+                OrderItem item = orderItemMapper.toEntity(itemDto);
+                Product product = productRepository.findById(itemDto.getProductId())
+                        .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                if (product.getAmount() < item.getAmount()) {
+                    throw new IllegalArgumentException("Not enough stock for product: " + product.getName());
+                }
+                product.setAmount(product.getAmount() - item.getAmount());
+                productRepository.save(product);
+                item.setProduct(product);
+                item.setOrder(order);
+                BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(item.getAmount()));
+                calculatedTotal = calculatedTotal.add(itemTotal);
+
+                order.addOrderItem(item);
+            }
         } else {
             throw new IllegalArgumentException("At least one order item is required to create an order.");
         }
-        if (order.getTotalPrice() == null) {
-            order.setTotalPrice(BigDecimal.ZERO);
-        }
+        order.setTotalPrice(calculatedTotal);
         if (order.getOrderCode() == null || order.getOrderCode().isEmpty()) {
-            order.setOrderCode(UUID.randomUUID().toString().substring(0, 8).toUpperCase()); // Tạo mã đơn hàng duy nhất
+            order.setOrderCode(UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         }
         order.setSlugStatus(order.getStatus().name().toLowerCase());
         Order savedOrder = orderRepository.save(order);
@@ -122,10 +137,24 @@ public class OrderServiceImpl implements OrderService {
         throw new UnsupportedOperationException("Unimplemented method 'deleteOrder'");
     }
 
+    private void restockProducts(Order order) {
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            if (product != null) {
+                int updatedAmount = product.getAmount() + item.getAmount();
+                product.setAmount(updatedAmount);
+                productRepository.save(product);
+            }
+        }
+    }
+
     @Override
     public OrderDto updateOrderStatus(Integer id, Status newStatus) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        if (order.getStatus() != Order.Status.CANCEL && newStatus == Order.Status.CANCEL) {
+            restockProducts(order);
+        }
         order.setStatus(newStatus);
         order.setSlugStatus(newStatus.name().toLowerCase());
         Order savedOrder = orderRepository.save(order);

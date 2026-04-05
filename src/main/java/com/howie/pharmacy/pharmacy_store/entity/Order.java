@@ -5,10 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-    
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -49,7 +49,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.CONFIRM;
-    
+
     @Column()
     private String slugStatus;
 
@@ -73,4 +73,12 @@ public class Order {
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private ShippingAddress shippingAddress;
+
+    public void addOrderItem(OrderItem item) {
+        if (orderItems == null) {
+            orderItems = new ArrayList<>();
+        }
+        orderItems.add(item);
+        item.setOrder(this);
+    }
 }

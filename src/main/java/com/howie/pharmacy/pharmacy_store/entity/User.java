@@ -45,6 +45,7 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    // @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private ERole role = ERole.CUSTOMER; // Default role is customer
 

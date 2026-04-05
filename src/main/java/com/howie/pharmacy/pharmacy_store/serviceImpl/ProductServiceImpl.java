@@ -16,6 +16,7 @@ import com.howie.pharmacy.pharmacy_store.dto.product.ProductDto;
 import com.howie.pharmacy.pharmacy_store.dto.product.ProductResponseDto;
 import com.howie.pharmacy.pharmacy_store.entity.Brand;
 import com.howie.pharmacy.pharmacy_store.entity.Product;
+import com.howie.pharmacy.pharmacy_store.exception.AppExceptions.ResourceNotFoundException;
 import com.howie.pharmacy.pharmacy_store.mapper.ProductMapper;
 import com.howie.pharmacy.pharmacy_store.repository.BrandRepository;
 import com.howie.pharmacy.pharmacy_store.repository.ProductRepository;
@@ -105,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
     public Optional<ProductDto> findById(Integer id) {
         return Optional.ofNullable(productRepository.findById(id)
                 .map(productMapper::toDto)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found")));
     }
 
 }

@@ -14,7 +14,8 @@ import lombok.AllArgsConstructor;
 @Table(name = "order_items")
 public class OrderItem {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
@@ -28,4 +29,3 @@ public class OrderItem {
     @Column(nullable = false)
     private Integer amount;
 }
-

@@ -10,6 +10,7 @@ import com.howie.pharmacy.pharmacy_store.dto.auth.LoginRequestDto;
 import com.howie.pharmacy.pharmacy_store.dto.auth.RegisterRequestDto;
 import com.howie.pharmacy.pharmacy_store.dto.user.UserDto;
 import com.howie.pharmacy.pharmacy_store.entity.User;
+import com.howie.pharmacy.pharmacy_store.exception.AppExceptions.BadRequestException;
 import com.howie.pharmacy.pharmacy_store.mapper.UserMapper;
 import com.howie.pharmacy.pharmacy_store.repository.UserRepository;
 import com.howie.pharmacy.pharmacy_store.utils.JwtUtils;
@@ -30,12 +31,11 @@ public class AuthServiceImpl {
 
     @Transactional
     public UserDto register(RegisterRequestDto request) {
-        System.out.println("Registering user with email: " + request);
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email is already in use");
+            throw new BadRequestException("Email is already in use");
         }
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new IllegalArgumentException("Phone number is already in use");
+            throw new BadRequestException("Phone number is already in use");
         }
 
         User user = new User();
@@ -50,10 +50,10 @@ public class AuthServiceImpl {
 
     public AuthResponseDto login(LoginRequestDto request) {
         User user = userRepository.findByPhone(request.getPhone())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid phone number or password"));
+                .orElseThrow(() -> new BadRequestException("Invalid phone number or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid phone number or password");
+            throw new BadRequestException("Invalid phone number or password");
         }
 
         String token = jwtUtils.generateToken(user);

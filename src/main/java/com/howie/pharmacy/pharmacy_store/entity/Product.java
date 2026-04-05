@@ -23,7 +23,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(name = "products")
 public class Product {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,6 +59,9 @@ public class Product {
 
     @Column()
     private Boolean sale = false;
+
+    @Column()
+    private Integer stock = 10;
 
     @CreatedDate
     @Column(nullable = false)

@@ -13,6 +13,8 @@ import com.howie.pharmacy.pharmacy_store.dto.auth.RegisterRequestDto;
 import com.howie.pharmacy.pharmacy_store.dto.user.UserDto;
 import com.howie.pharmacy.pharmacy_store.serviceImpl.AuthServiceImpl;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -20,13 +22,13 @@ public class AuthController {
     private AuthServiceImpl authService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@RequestBody RegisterRequestDto request) {
+    public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequestDto request) {
         System.out.println("Received registration request: " + request);
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginRequestDto request) {
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }

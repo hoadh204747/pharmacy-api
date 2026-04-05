@@ -28,6 +28,7 @@ public interface OrderItemMapper {
     // Mapping từ Entity sang DTO để trả về API
     @Mapping(source = "product.id", target = "productId")
     @Mapping(source = "product.name", target = "productName") // Nếu DTO có trường này
+    @Mapping(source = "product.price", target = "price")
     OrderItemDto toDto(OrderItem entity);
 
     List<OrderItemDto> toDtoList(List<OrderItem> entities);

@@ -1,5 +1,7 @@
 package com.howie.pharmacy.pharmacy_store.dto.auth;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequestDto {
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number must be valid")
+    @NotBlank(message = "Phone number is required")
     private String phone;
+    @NotBlank(message = "Password is required")
     private String password;
 }
