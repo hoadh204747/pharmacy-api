@@ -109,4 +109,10 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found")));
     }
 
+    @Override
+    public List<ProductResponseDto> searchProducts(String keyword) {
+        List<Product> products = productRepository.searchProducts(keyword);
+        return productMapper.toResponseDtoList(products);
+    }
+
 }

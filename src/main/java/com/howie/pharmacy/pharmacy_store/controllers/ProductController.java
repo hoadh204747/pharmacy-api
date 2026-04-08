@@ -84,4 +84,10 @@ public class ProductController {
                 .map(productDto -> new ResponseEntity<>(productDto, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam String keyword) {
+        List<ProductResponseDto> products = productService.searchProducts(keyword);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }

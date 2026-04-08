@@ -25,4 +25,6 @@ public interface ProductService {
     void delete(Integer id);
 
     Optional<ProductDto> findById(Integer id);
+
+    List<ProductResponseDto> searchProducts(String keyword);
 }
