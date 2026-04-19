@@ -29,6 +29,9 @@ public class AuthServiceImpl {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private RefreshTokenServiceImpl refreshTokenService;
+
     @Transactional
     public UserDto register(RegisterRequestDto request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -56,7 +59,8 @@ public class AuthServiceImpl {
             throw new BadRequestException("Invalid phone number or password");
         }
 
-        String token = jwtUtils.generateToken(user);
-        return new AuthResponseDto(token, userMapper.toDto(user));
+        String accessToken = jwtUtils.generateToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
+        return new AuthResponseDto(accessToken, refreshToken, userMapper.toDto(user));
     }
 }

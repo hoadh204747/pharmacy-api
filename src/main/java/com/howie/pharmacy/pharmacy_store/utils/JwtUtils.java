@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtils {
 
     private final String JWT_SECRET = "YourSecretKeyShouldBeVeryLongAndSecureForHS256Algorithm";
-    private final long JWT_EXPIRATION = 86400000L; // 1 ngày
+    private final long JWT_EXPIRATION = 300000L; // 5 minutes
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));

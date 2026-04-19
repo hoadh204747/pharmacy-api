@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AuthResponseDto {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private UserDto user;
 }
