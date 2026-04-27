@@ -2,6 +2,7 @@ package com.howie.pharmacy.pharmacy_store.dto.product;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.howie.pharmacy.pharmacy_store.dto.brand.BrandResponseDto;
@@ -25,7 +26,8 @@ public class ProductDto {
     private Float discount;
     private Integer amount;
     private Integer sold;
-    private Boolean sale;
+    private Boolean isSale;
+    private LocalDateTime saleEndTime;
     private BrandResponseDto brand;
     private LocalDate createdAt;
     private LocalDate updatedAt;
