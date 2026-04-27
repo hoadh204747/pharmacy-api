@@ -32,7 +32,8 @@ public interface ProductMapper {
     // @Mapping(target = "price", ignore = true)
     // @Mapping(target = "description", ignore = true)
     @Mapping(target = "sold", ignore = true)
-    @Mapping(target = "sale", ignore = true)
+    @Mapping(target = "isSale", ignore = true)
+    @Mapping(target = "saleEndTime", ignore = true)
     @Mapping(target = "orderItems", ignore = true)
     Product toEntity(ProductCreateDto productCreateDto);
 
@@ -46,7 +47,8 @@ public interface ProductMapper {
     // @Mapping(target = "price", ignore = true)
     // @Mapping(target = "description", ignore = true)
     @Mapping(target = "sold", ignore = true)
-    @Mapping(target = "sale", ignore = true)
+    @Mapping(target = "isSale", ignore = true)
+    @Mapping(target = "saleEndTime", ignore = true)
     @Mapping(target = "orderItems", ignore = true)
     void updateEntityFromDto(ProductCreateDto productCreateDto, @MappingTarget Product product);
 }

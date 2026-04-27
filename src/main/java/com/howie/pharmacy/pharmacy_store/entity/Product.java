@@ -58,7 +58,10 @@ public class Product {
     private Integer sold = 0;
 
     @Column()
-    private Boolean sale = false;
+    private Boolean isSale = false;
+
+    @Column(nullable = true)
+    private LocalDateTime saleEndTime;
 
     @Column()
     private Integer stock = 10;

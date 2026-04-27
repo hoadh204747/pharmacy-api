@@ -1,10 +1,12 @@
 package com.howie.pharmacy.pharmacy_store.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,5 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
         @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
         List<Product> searchProducts(@Param("keyword") String keyword);
 
-        // Additional methods can be defined here as needed
+        @Modifying
+        @Query("UPDATE Product p SET p.isSale = false WHERE p.isSale = true AND p.saleEndTime < :currentTime")
+        int closeExpiredSales(@Param("currentTime") LocalDateTime currentTime);
 }
