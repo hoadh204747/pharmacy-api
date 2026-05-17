@@ -72,9 +72,17 @@ public class OrderServiceImpl implements OrderService {
         String currentUserPhone = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByPhone(currentUserPhone).orElse(null);
 
+        User existingUser = userRepository.findByPhone(orderCreateDto.getShippingAddress().getPhone()).orElse(null);
+
         Order order = orderMapper.toEntity(orderCreateDto);
 
-        order.setUser(currentUser);
+        if (existingUser != null) {
+            order.setUser(existingUser);
+        } else if (currentUser != null) {
+            order.setUser(currentUser);
+        } else {
+            throw new IllegalArgumentException("No user found for the provided phone number.");
+        }
 
         if (orderCreateDto.getShippingAddress() != null) {
             ShippingAddress shippingAddress = shippingAddressMapper.toEntity(orderCreateDto.getShippingAddress());
@@ -113,7 +121,6 @@ public class OrderServiceImpl implements OrderService {
 
         OrderCreateEvent orderCreateEvent = new OrderCreateEvent();
         orderCreateEvent.setOrderId(savedOrder.getId());
-        orderCreateEvent.setOrderCode(savedOrder.getOrderCode());
         orderCreateEvent.setUserId(1);
         orderCreateEvent.setUserEmail("");
 

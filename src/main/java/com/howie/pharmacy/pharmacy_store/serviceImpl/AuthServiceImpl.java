@@ -1,5 +1,7 @@
 package com.howie.pharmacy.pharmacy_store.serviceImpl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,9 +11,11 @@ import com.howie.pharmacy.pharmacy_store.dto.auth.AuthResponseDto;
 import com.howie.pharmacy.pharmacy_store.dto.auth.LoginRequestDto;
 import com.howie.pharmacy.pharmacy_store.dto.auth.RegisterRequestDto;
 import com.howie.pharmacy.pharmacy_store.dto.user.UserDto;
+import com.howie.pharmacy.pharmacy_store.entity.Order;
 import com.howie.pharmacy.pharmacy_store.entity.User;
 import com.howie.pharmacy.pharmacy_store.exception.AppExceptions.BadRequestException;
 import com.howie.pharmacy.pharmacy_store.mapper.UserMapper;
+import com.howie.pharmacy.pharmacy_store.repository.OrderRepository;
 import com.howie.pharmacy.pharmacy_store.repository.UserRepository;
 import com.howie.pharmacy.pharmacy_store.utils.JwtUtils;
 
@@ -32,6 +36,9 @@ public class AuthServiceImpl {
     @Autowired
     private RefreshTokenServiceImpl refreshTokenService;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     @Transactional
     public UserDto register(RegisterRequestDto request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -48,7 +55,17 @@ public class AuthServiceImpl {
         user.setRole(User.ERole.CUSTOMER);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        return userMapper.toDto(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+
+        List<Order> guestOrders = orderRepository.findByPhoneAndUserIsNull(savedUser.getPhone());
+        if (!guestOrders.isEmpty()) {
+            for (Order order : guestOrders) {
+                order.setUser(savedUser);
+            }
+            orderRepository.saveAll(guestOrders);
+        }
+
+        return userMapper.toDto(savedUser);
     }
 
     public AuthResponseDto login(LoginRequestDto request) {
