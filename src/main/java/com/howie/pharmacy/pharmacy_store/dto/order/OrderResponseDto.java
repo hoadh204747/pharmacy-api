@@ -24,7 +24,7 @@ public class OrderResponseDto {
     private Boolean isPaid;
     private String orderCode;
 
-    // private Integer userId;
+    private Integer userId;
     // private String userName;
 
     private ShippingAddressDto shippingAddress;

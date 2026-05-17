@@ -21,6 +21,7 @@ public interface OrderMapper {
 
     @Mapping(target = "shippingAddress", source = "shippingAddress")
     @Mapping(target = "orderItems", source = "orderItems")
+    @Mapping(target = "userId", source = "user.id")
     OrderResponseDto toResponseDto(Order order);
 
     List<OrderResponseDto> toResponseDtoList(List<Order> orders);
